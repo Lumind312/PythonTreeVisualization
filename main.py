@@ -3,16 +3,12 @@ from queue import Queue
 
 def printTree(root, formulas):
 	# https://treelib.readthedocs.io/en/latest/
-	tree = Digraph()
+	tree = Digraph(graph_attr={'rank':'source'})
 	seen = [root]
-	# tree.attr(constraint='false')
+	# tree.attr(constraint='false')			# no idea if this is doing anything or not
+	tree.node(root, root, shape='star')
 
-	sub = Digraph(graph_attr={'rank':'source'})
-	sub.node(root, root, shape='star')
-	sub.attr(rank='source')
-	tree.subgraph(sub)
-	prev = sub
-	sub = Digraph(graph_attr={'rank':'source'})
+	par = Digraph(graph_attr={'rank':'source'})
 
 	q = Queue()
 	q.put(root)
@@ -30,27 +26,23 @@ def printTree(root, formulas):
 		for i in child:
 			if i == 'Hippo':
 				i = 'Hippopotamus'				# it was sometimes shortened, sometimes not
-			if i not in seen and i not in tree.body:
+			if i not in seen and i not in tree.body and i not in par.body:
 				seen.append(i)
 				q.put(i)
-				sub.node(i, i)
-			tree.edge(i, curr)					# duplicate lines are ok
+				par.node(i, i)
+			par.edge(i, curr)					# duplicate lines are ok
 			# print(tree)
 			count += 1
 
 		if pow(2,level) == count:
-			prev.subgraph(sub)
-			prev = sub
-			sub = Digraph(graph_attr={'rank':'source'})
-
-			if level >= 3:
-				sub.attr(rank='max')
+			par.subgraph(tree)
+			tree = par
+			par = Digraph(graph_attr={'rank':'same'})
 			
 			count = 0
 			level += 1
-		if level >= 4:
+		if level >= 5:
 			break
-
 	
 	print('Tree has been created.')
 	tree.unflatten().render()					# save diagram in generated .pdf
