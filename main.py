@@ -4,19 +4,27 @@ from queue import Queue
 def printTree(root, formulas):
 	# https://treelib.readthedocs.io/en/latest/
 	tree = Digraph()
-
 	seen = [root]
-	tree.node(root, root, shape='star')
+	# tree.attr(constraint='false')
+
+	sub = Digraph(graph_attr={'rank':'source'})
+	sub.node(root, root, shape='star')
+	sub.attr(rank='source')
+	tree.subgraph(sub)
+	prev = sub
+	sub = Digraph(graph_attr={'rank':'source'})
 
 	q = Queue()
 	q.put(root)
-	next_group = Queue()		# needed for subgraph
+	level = 1		# needed for subgraph
+	count = 0
 
 	while not q.empty():
 		curr = q.get()
 		if curr == 'Cats' or curr == 'Dogs':	# any cat/dog applies, so there's no df row for it
 			continue
 		child = (formulas.loc[curr]).to_list()
+
 		# print(child)
 		# print(curr)
 		for i in child:
@@ -24,15 +32,25 @@ def printTree(root, formulas):
 				i = 'Hippopotamus'				# it was sometimes shortened, sometimes not
 			if i not in seen and i not in tree.body:
 				seen.append(i)
-				next_group.put(i)
-				tree.node(i, i)
+				q.put(i)
+				sub.node(i, i)
 			tree.edge(i, curr)					# duplicate lines are ok
 			# print(tree)
-		
-		if q.empty():							# when we use up our main queue, pull from the next group
-			# cannot clone a queue directly
-			while not next_group.empty():
-				q.put(next_group.get())
+			count += 1
+
+		if pow(2,level) == count:
+			prev.subgraph(sub)
+			prev = sub
+			sub = Digraph(graph_attr={'rank':'source'})
+
+			if level >= 3:
+				sub.attr(rank='max')
+			
+			count = 0
+			level += 1
+		if level >= 4:
+			break
+
 	
 	print('Tree has been created.')
 	tree.unflatten().render()					# save diagram in generated .pdf
@@ -50,7 +68,9 @@ def readSheet(sheet):			# 1
 	return df
 
 df = readSheet('Pixel People Formulas.csv')
-animal = input('Give an animal to display (\'q\' to quit): ')	# 3
+# animal = input('Give an animal to display (\'q\' to quit): ')	# 3
+animal = 'tiger'
+animal = animal.capitalize()
 printTree(animal, df)
 print('Thank you.')
 
