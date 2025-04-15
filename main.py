@@ -1,59 +1,40 @@
-from graphviz import Digraph
-from queue import Queue
+# tree is created using dict
+def createTree(root, formulas, level=4):
+	if level == 0 or root == 'Cats':
+		return ''
 
-def printTree(root, formulas):
-	# https://treelib.readthedocs.io/en/latest/
-	tree = Digraph()
-	seen = [root]
-	# tree.attr(constraint='false')
+	currDict = {}
+	animal1 = formulas.loc[root]["Parent 1"]
+	animal2 = formulas.loc[root]["Parent 2"]
+	currDict[animal1] = createTree(animal1, formulas, level-1)
+	currDict[animal2] = createTree(animal2, formulas, level-1)
+	# input(root + ' ' + str(currDict))
 
-	sub = Digraph(graph_attr={'rank':'source'})
-	sub.node(root, root, shape='star')
-	sub.attr(rank='source')
-	tree.subgraph(sub)
-	prev = sub
-	sub = Digraph(graph_attr={'rank':'source'})
+	return currDict
 
-	q = Queue()
-	q.put(root)
-	level = 1		# needed for subgraph
-	count = 0
-
-	while not q.empty():
-		curr = q.get()
-		if curr == 'Cats' or curr == 'Dogs':	# any cat/dog applies, so there's no df row for it
-			continue
-		child = (formulas.loc[curr]).to_list()
-
-		# print(child)
-		# print(curr)
-		for i in child:
-			if i == 'Hippo':
-				i = 'Hippopotamus'				# it was sometimes shortened, sometimes not
-			if i not in seen and i not in tree.body:
-				seen.append(i)
-				q.put(i)
-				sub.node(i, i)
-			tree.edge(i, curr)					# duplicate lines are ok
-			# print(tree)
-			count += 1
-
-		if pow(2,level) == count:
-			prev.subgraph(sub)
-			prev = sub
-			sub = Digraph(graph_attr={'rank':'source'})
-
-			if level >= 3:
-				sub.attr(rank='max')
-			
-			count = 0
-			level += 1
-		if level >= 4:
-			break
-
+def printTree(root: dict, level: int=0):
+	if root == '':
+		return
 	
-	print('Tree has been created.')
-	tree.unflatten().render()					# save diagram in generated .pdf
+	keys = list(root.keys())
+	# print(keys)
+
+	# left side
+	for i in range(level-1):
+		print(' |  ', end='')
+	if level > 0:
+		print(' |--', end='')
+	print(keys[0])
+	printTree(root[keys[0]], level+1)
+
+	# right side
+	if len(keys) > 1:
+		for i in range(level-1):
+			print(' |  ', end='')
+		if level > 0:
+			print(' |--', end='')
+		print(keys[1])
+		printTree(root[keys[1]], level+1)
 
 def readSheet(sheet):			# 1
 	import pandas as pd
@@ -69,9 +50,12 @@ def readSheet(sheet):			# 1
 
 df = readSheet('Pixel People Formulas.csv')
 # animal = input('Give an animal to display (\'q\' to quit): ')	# 3
-animal = 'tiger'
-animal = animal.capitalize()
-printTree(animal, df)
+# animal = animal.title()
+animal = 'Tiger'
+tree = {}
+tree[animal] = createTree(animal, df)
+print(animal, tree)
+printTree(tree, 0)
 print('Thank you.')
 
 
