@@ -49,11 +49,21 @@ def readSheet(sheet):
 	return df
 
 df = readSheet('Pixel People Formulas.csv')
-animal = input('Give an animal to display (\'q\' to quit): ')
-animal = animal.title()
-# animal = 'Tiger'
-tree = {}
-tree[animal] = createTree(animal, df)
-print(animal, tree)
-printTree(tree, 0)
-print('Finished creating tree.')
+
+todo_list = [
+	"Sailfish",
+	"Sunfish",
+	"Seahorse"
+]
+print('Todo list:')
+print(todo_list)
+
+while True:
+	animal = input('Give an animal to display (Ctrl+C to quit): ')
+	animal = animal.title()
+	# animal = 'Tiger'
+	tree = {}
+	tree[animal] = createTree(animal, df)
+	print(animal, tree)
+	printTree(tree, 0)
+	print('Finished creating tree.')
