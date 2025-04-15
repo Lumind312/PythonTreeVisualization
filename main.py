@@ -36,9 +36,9 @@ def printTree(root: dict, level: int=0):
 		print(keys[1])
 		printTree(root[keys[1]], level+1)
 
-def readSheet(sheet):			# 1
+def readSheet(sheet):
 	import pandas as pd
-	df = pd.read_csv(sheet)		# 2
+	df = pd.read_csv(sheet)
 	df.rename(columns=df.iloc[0], inplace=True)
 	df.drop([0], inplace=True)
 	df.dropna(inplace=True)
@@ -49,23 +49,11 @@ def readSheet(sheet):			# 1
 	return df
 
 df = readSheet('Pixel People Formulas.csv')
-# animal = input('Give an animal to display (\'q\' to quit): ')	# 3
-# animal = animal.title()
-animal = 'Tiger'
+animal = input('Give an animal to display (\'q\' to quit): ')
+animal = animal.title()
+# animal = 'Tiger'
 tree = {}
 tree[animal] = createTree(animal, df)
 print(animal, tree)
 printTree(tree, 0)
-print('Thank you.')
-
-
-
-# Given the formula for animals, display animals needed to create
-# Also display when there is a cycle
-# TODO: figure out when to stop displaying, or if I need to continue displaying an animal
-# Also, display cycles if possible. So maybe stop when we hit a cycle?
-
-# 1. Read in excel sheet, save to df
-# 2. Get animal to display.
-# 3. Grab animal from df, get results for child animals. *BFS*
-# 4. Need to know when to stop creating the graph. Currently uses BFS and stops at cycles, but I want it to stop like 3 levels down. Or format it to have levels (rank).
+print('Finished creating tree.')
